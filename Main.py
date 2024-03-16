@@ -109,7 +109,15 @@ def create_cards(message):
         add_users(engine, cid)
         userStep[cid] = 0
         bot.send_message(cid, Hello_text)
+
+    markup = create_cards_markup()
+
+    bot.send_message(message.chat.id, "Your message", reply_markup=markup)
+
+
+def create_cards_markup():
     markup = types.ReplyKeyboardMarkup(row_width=2)
+    return markup
 
 
 global buttons
