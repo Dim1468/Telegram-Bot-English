@@ -20,7 +20,7 @@ def user_list(engine):
 
 def add_users(engine, user_id):
     session = sessionmaker(bind=engine)()
-    session.add(CustomUser(cid=user_id))
+    session.add(CustomUser(custom_cid=user_id))  # Заменил "cid" на "custom_cid" как в классе
     session.commit()
     session.close()
 
