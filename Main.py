@@ -120,6 +120,13 @@ def create_cards_markup():
     return markup
 
 
+def get_target_word_from_db():
+    pass
+def get_translation_from_db(target_word):
+    pass
+def get_other_words_from_db():
+    pass
+
 global buttons
 buttons = []
 target_word = get_target_word_from_db()
