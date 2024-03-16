@@ -52,9 +52,20 @@ def add_words(engine, custom_cid, word, translate):
 
 def delete_words(engine, custom_cid, word):
     session = sessionmaker(bind=engine)()
-    user_id = session.query(CustomUser.user_id).filter(CustomUser.custom_cid == custom_cid).first()[0]
-    session.query(CustomUserWord).filter(CustomUserWord.user_id == user_id, CustomUserWord.custom_word == word).delete()
-    session.commit()
+    user = session.query(CustomUser).filter(CustomUser.custom_cid == custom_cid).first()
+
+    if user:
+        user_id = user.user_id
+        word_to_delete = session.query(CustomUserWord).filter(CustomUserWord.user_id == user_id,
+                                                              CustomUserWord.custom_word == word).first()
+        if word_to_delete:
+            session.delete(word_to_delete)
+            session.commit()
+        else:
+            print("Слово '{}' не найдено для пользователя с custom_cid={}".format(word, custom_cid))
+    else:
+        print("Пользователь с custom_cid={} не найден.".format(custom_cid))
+
     session.close()
 
 
