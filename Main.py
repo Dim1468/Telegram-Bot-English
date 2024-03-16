@@ -38,10 +38,15 @@ def get_words(engine, user_custom_cid):
 
 def add_words(engine, custom_cid, word, translate):
     session = sessionmaker(bind=engine)()
-    user_id = session.query(CustomUser.user_id).filter(CustomUser.custom_cid == custom_cid).first()[0]
-    new_word = CustomUserWord(custom_word=word, custom_translate=translate, user_id=user_id)
-    session.add(new_word)
-    session.commit()
+    user = session.query(CustomUser).filter(CustomUser.custom_cid == custom_cid).first()
+    if user:
+        user_id = user.user_id
+        new_word = CustomUserWord(custom_word=word, custom_translate=translate, user_id=user_id)
+        session.add(new_word)
+        session.commit()
+    else:
+        print("Пользователь с custom_cid={} не найден.".format(custom_cid))
+
     session.close()
 
 
