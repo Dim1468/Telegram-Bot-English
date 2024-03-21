@@ -1,6 +1,6 @@
 from Base import populate_db
 from Class import CustomWord, CustomUser, CustomUserWord
-import sqlalchemy as sq
+import SQLAlchemy as sq
 from sqlalchemy.orm import sessionmaker
 
 import random
@@ -143,8 +143,9 @@ def get_translation_from_db(target_word):
 def get_other_words_from_db():
     pass
 
-global buttons
-buttons = []
+markup = types.ReplyKeyboardMarkup(row_width=1, resize_keyboard=True)
+markup.add(types.KeyboardButton(text="Назад в меню"))
+
 target_word = get_target_word_from_db()
 translate = get_translation_from_db(target_word)
 others = get_other_words_from_db()
