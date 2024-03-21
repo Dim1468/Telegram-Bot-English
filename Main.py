@@ -116,6 +116,7 @@ Hello_text = '''Привет
   - добавить слово ➕,
   - удалить слово 🔙.
    Начнём ⬇️?'''
+
 @bot.message_handler(commands=['cards', 'start'])
 def create_cards(message):
     cid = message.chat.id
@@ -125,13 +126,16 @@ def create_cards(message):
         userStep[cid] = 0
         bot.send_message(cid, Hello_text)
 
-    markup = create_cards_markup()
+    markup = create_cards_markup()  # Создание разметки с карточками
 
     bot.send_message(message.chat.id, "Your message", reply_markup=markup)
 
-
 def create_cards_markup():
     markup = types.ReplyKeyboardMarkup(row_width=2)
+    card1 = types.KeyboardButton("Card 1")
+    card2 = types.KeyboardButton("Card 2")
+    card3 = types.KeyboardButton("Card 3")
+    markup.add(card1, card2, card3)  # Добавление карточек к разметке
     return markup
 
 
