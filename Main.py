@@ -2,6 +2,7 @@ from Base import populate_db
 from Class import CustomWord, CustomUser, CustomUserWord
 import sqlalchemy as sq
 from sqlalchemy.orm import sessionmaker
+from sqlalchemy.exc import SQLAlchemyError
 
 import random
 from telebot import types, TeleBot, custom_filters
@@ -25,48 +26,46 @@ def add_users(engine, user_id):
     session.close()
 
 
-def get_words(engine, user_custom_cid):
-    session = sessionmaker(bind=engine)()
-    user_words = session.query(CustomUserWord.custom_word, CustomUserWord.custom_translate) \
-        .join(CustomUser, CustomUser.user_id == CustomUserWord.user_id) \
-        .filter(CustomUser.custom_cid == user_custom_cid).all()
-    all_words = session.query(CustomWord.custom_word, CustomWord.custom_translate).all()
-    result = all_words + user_words
-    session.close()
-    return result
+def add_word(engine, custom_cid, word, translate):
+    try:
+        Session = sessionmaker(bind=engine)
+        with Session() as session:
+            user = session.query(CustomUser).filter(CustomUser.custom_cid == custom_cid).first()
+            if user:
+                user_id = user.user_id
+                new_word = CustomUserWord(custom_word=word, custom_translate=translate, user_id=user_id)
+                session.add(new_word)
+                session.commit()
+                return True  # Успешно добавлено слово
+            else:
+                print("Пользователь с custom_cid={} не найден.".format(custom_cid))
+                return False  # Пользователь не найден
+        except sqlalchemy as e:
+        print("Ошибка при добавлении слова:", e)
+        return False  # Ошибка при добавлении слова
 
-
-def add_words(engine, custom_cid, word, translate):
-    session = sessionmaker(bind=engine)()
-    user = session.query(CustomUser).filter(CustomUser.custom_cid == custom_cid).first()
-    if user:
-        user_id = user.user_id
-        new_word = CustomUserWord(custom_word=word, custom_translate=translate, user_id=user_id)
-        session.add(new_word)
-        session.commit()
-    else:
-        print("Пользователь с custom_cid={} не найден.".format(custom_cid))
-
-    session.close()
-
-
-def delete_words(engine, custom_cid, word):
-    session = sessionmaker(bind=engine)()
-    user = session.query(CustomUser).filter(CustomUser.custom_cid == custom_cid).first()
-
-    if user:
-        user_id = user.user_id
-        word_to_delete = session.query(CustomUserWord).filter(CustomUserWord.user_id == user_id,
-                                                              CustomUserWord.custom_word == word).first()
-        if word_to_delete:
-            session.delete(word_to_delete)
-            session.commit()
-        else:
-            print("Слово '{}' не найдено для пользователя с custom_cid={}".format(word, custom_cid))
-    else:
-        print("Пользователь с custom_cid={} не найден.".format(custom_cid))
-
-    session.close()
+def delete_word(engine, custom_cid, word, sqlalchemy=None):
+    try:
+        Session = sessionmaker(bind=engine)
+        with Session() as session:
+            user = session.query(CustomUser).filter(CustomUser.custom_cid == custom_cid).first()
+            if user:
+                user_id = user.user_id
+                word_to_delete = session.query(CustomUserWord).filter(CustomUserWord.user_id == user_id,
+                                                                      CustomUserWord.custom_word == word).first()
+                if word_to_delete:
+                    session.delete(word_to_delete)
+                    session.commit()
+                    return True  # Успешно удалено слово
+                else:
+                    print("Слово '{}' не найдено для пользователя с custom_cid={}".format(word, custom_cid))
+                    return False  # Слово не найдено
+            else:
+                print("Пользователь с custom_cid={} не найден.".format(custom_cid))
+                return False  # Пользователь не найден
+    except sqlalchemy as e:
+        print("Ошибка при удалении слова:", e)
+        return False  # Ошибка при удалении слова
 
 
 engine = sq.create_engine('postgresql://postgres:password@localhost:5432/tgbot')
@@ -180,15 +179,7 @@ add_word_btn = types.KeyboardButton(Command.ADD_WORD)
 delete_word_btn = types.KeyboardButton(Command.DELETE_WORD)
 buttons.extend([next_btn, add_word_btn, delete_word_btn])
 
-markup.add(*buttons)
 
-greeting = f"Выбери перевод слова:\n🇷🇺 {translate}"
-bot.send_message(message.chat.id, greeting, reply_markup=markup)
-bot.set_state(message.from_user.id, MyStates.target_word, message.chat.id)
-with bot.retrieve_data(message.from_user.id, message.chat.id) as data:
-    data['target_word'] = target_word
-    data['translate_word'] = translate
-    data['other_words'] = others
 
 @bot.message_handler(func=lambda message: message.text == Command.NEXT)
 def next_cards(message):
