@@ -141,25 +141,22 @@ def create_cards_markup():
     return markup
 
 
-
-db_engine = sq.create_engine('postgresql://postgres:password@localhost:5432/tgbot')
-
 def get_target_word_from_db():
-    Session = sessionmaker(bind=db_engine)
+    Session = sessionmaker(bind=engine)
     session = Session()
     target_word = session.query(CustomWord.custom_word).first()
     session.close()
     return target_word
 
 def get_translation_from_db(target_word):
-    Session = sessionmaker(bind=db_engine)
+    Session = sessionmaker(bind=engine)
     session = Session()
     translation = session.query(CustomWord.custom_translate).filter_by(custom_word=target_word).first()
     session.close()
     return translation
 
 def get_other_words_from_db():
-    Session = sessionmaker(bind=db_engine)
+    Session = sessionmaker(bind=engine)
     session = Session()
     other_words = session.query(CustomWord.custom_word).filter(CustomWord.custom_word != target_word).all()
     session.close()
