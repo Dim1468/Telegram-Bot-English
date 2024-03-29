@@ -162,6 +162,9 @@ def get_other_words_from_db():
     session.close()
     return other_words
 
+
+buttons = []
+
 markup = types.ReplyKeyboardMarkup(row_width=1, resize_keyboard=True)
 markup.add(types.KeyboardButton(text="Назад в меню"))
 
@@ -229,6 +232,3 @@ def message_reply(message):
 bot.add_custom_filter(custom_filters.StateFilter(bot))
 
 bot.infinity_polling(skip_pending=True)
-
-
-
