@@ -3,12 +3,14 @@ from Class import CustomWord, CustomUser, CustomUserWord
 import sqlalchemy as sq
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy.exc import SQLAlchemyError
+import logging
 
 import random
 from telebot import types, TeleBot, custom_filters
 from telebot.storage import StateMemoryStorage
 from telebot.handler_backends import State, StatesGroup
 
+logging.basicConfig(filename='errors.log', level=logging.ERROR)
 
 def user_list(engine):
     Session = sessionmaker(bind=engine)
@@ -38,10 +40,10 @@ def add_word(engine, custom_cid, word, translate):
                 session.commit()
                 return True  # Успешно добавлено слово
             else:
-                print("Пользователь с custom_cid={} не найден.".format(custom_cid))
+                logging.error("Пользователь с custom_cid={} не найден.".format(custom_cid))
                 return False  # Пользователь не найден
-        except sqlalchemy as e:
-        print("Ошибка при добавлении слова:", e)
+    except sq.SomeException as e:
+        logging.error("Ошибка при добавлении слова: %s", e)
         return False  # Ошибка при добавлении слова
 
 def delete_word(engine, custom_cid, word, sqlalchemy=None):
