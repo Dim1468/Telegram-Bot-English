@@ -25,5 +25,3 @@ def populate_db(engine):
     session.commit()
     session.close()
 
-db_engine = sq.create_engine('postgresql://postgres:password@localhost:5432/tgbot')
-populate_db(db_engine)
